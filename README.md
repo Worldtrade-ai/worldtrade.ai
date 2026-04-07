@@ -1,68 +1,6 @@
 https://yourname.github.io/worldtrade-ai-site
 
-<!DOCTYPE html>
-<html>
-<head>
-  <title>WorldTrade AI</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: linear-gradient(180deg, #0D0D0D, #111);
-      color: white;
-      text-align: center;
-    }
 
-    .hero {
-      padding: 100px 20px;
-    }
-
-    h1 {
-      font-size: 48px;
-      background: linear-gradient(90deg, #00D1FF, #00FF9C);
-      -webkit-background-clip: text;
-      color: transparent;
-    }
-
-    p {
-      color: #ccc;
-    }
-
-    .btn {
-      background: linear-gradient(90deg, #00D1FF, #00FF9C);
-      padding: 15px 30px;
-      border-radius: 12px;
-      color: black;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .section {
-      padding: 60px 20px;
-    }
-
-    .cards {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .card {
-      background: #1A1A1A;
-      padding: 20px;
-      margin: 10px;
-      border-radius: 15px;
-      width: 220px;
-      transition: 0.3s;
-    }
-
-    .card:hover {
-      transform: scale(1.05);
-    }
-  </style>
-</head>
-
-<body>
 
 <div class="hero">
   <h1>WorldTrade AI</h1>
