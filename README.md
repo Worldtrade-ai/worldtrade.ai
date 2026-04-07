@@ -93,9 +93,4 @@ https://yourname.github.io/worldtrade-ai-site
   <a href="https://forms.gle/yourlink" class="btn">Get Access</a>
 </div>
 
-</body>
-</html>
-<a href="https://forms.gle/yourlink" class="btn">
-  Join Early Access
-</a>
-https://docs.google.com/forms/d/e/1FAIpQLScLaFLucc8QlfRhlft9g5cdgGE3hgRzF5oh6mCdRnfH-RZJ0w/viewform?usp=header
+https://docs.google.com/forms/d/e/1FAIpQLScLaFLucc8QlfRhlft9g5cdgGE3hgRzF5oh6mCdRnfH-RZJ0w/viewform?usp=publish-editor
