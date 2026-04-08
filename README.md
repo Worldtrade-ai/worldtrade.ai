@@ -1,7 +1,3 @@
-https://yourname.github.io/worldtrade-ai-site
-
-
-
 <div class="hero">
   <h1>WorldTrade AI</h1>
   <p>Trade Crypto Smarter with AI</p>
@@ -27,8 +23,3 @@ https://yourname.github.io/worldtrade-ai-site
 
 <div class="section">
   <h2>Join Now</h2>
-  <p>Be one of the first users</p>
-  <a href="https://forms.gle/yourlink" class="btn">Get Access</a>
-</div>
-
-https://docs.google.com/forms/d/e/1FAIpQLScLaFLucc8QlfRhlft9g5cdgGE3hgRzF5oh6mCdRnfH-RZJ0w/viewform?usp=publish-editor
