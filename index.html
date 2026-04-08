@@ -8,29 +8,39 @@
       color: white;
       text-align: center;
       font-family: Arial;
-      padding-top: 100px;
+      padding: 50px;
     }
-    h1 {
-      font-size: 40px;
-    }
-    p {
-      font-size: 18px;
-      color: gray;
-    }
-    button {
-      padding: 10px 20px;
-      background: gold;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+    .price-box {
+      margin-top: 30px;
+      font-size: 24px;
     }
   </style>
 </head>
 <body>
 
   <h1>🚀 WorldTrade AI</h1>
-  <p>Your crypto app is coming soon</p>
-  <button onclick="alert('Coming Soon!')">Get Started</button>
+  <p>Live Crypto Prices</p>
+
+  <div class="price-box">
+    BTC: <span id="btc">Loading...</span><br>
+    ETH: <span id="eth">Loading...</span>
+  </div>
+
+  <script>
+    async function getPrices() {
+      const res = await fetch("https://api.binance.com/api/v3/ticker/price");
+      const data = await res.json();
+
+      const btc = data.find(c => c.symbol === "BTCUSDT");
+      const eth = data.find(c => c.symbol === "ETHUSDT");
+
+      document.getElementById("btc").innerText = "$" + Number(btc.price).toFixed(2);
+      document.getElementById("eth").innerText = "$" + Number(eth.price).toFixed(2);
+    }
+
+    getPrices();
+    setInterval(getPrices, 5000);
+  </script>
 
 </body>
 </html>
