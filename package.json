@@ -1,0 +1,23 @@
+{
+  "name": "worldtrade-ai",
+  "version": "1.0.0",
+  "description": "WorldTrade AI - Trade Crypto Smarter with AI",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Leviana2024/worldtrade.ai.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Leviana2024/worldtrade.ai/issues"
+  },
+  "homepage": "https://github.com/Leviana2024/worldtrade.ai#readme",
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0"
+  }
+}

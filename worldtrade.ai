@@ -74,5 +74,6 @@
   <a href="#" class="btn">Get Started</a>
 </div>
 
+<script type="module" src="/speed-insights.js"></script>
 </body>
 </html>
