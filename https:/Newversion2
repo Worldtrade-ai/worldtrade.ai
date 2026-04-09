@@ -1,3 +1,8 @@
+function login() {
+  const user = document.getElementById("username").value;
+  localStorage.setItem("user", user);
+  alert("Welcome " + user);
+}
 <!DOCTYPE html>
 <html>
 <head>
