@@ -1,21 +1,15 @@
-function getSignal(price, previousPrice) {
-  if (price > previousPrice) {
-    return "📈 BUY";
-  } else if (price < previousPrice) {
-    return "📉 SELL";
-  } else {
-    return "⏸ HOLD";
-  }
-}
-<h2 id="signal"></h2> 
-let prevBTC = 70000;
+<input type="text" id="email" placeholder="Enter email">
+<button onclick="login()">Login</button>
 
-function updateSignal(currentBTC) {
-  const signal = getSignal(currentBTC, prevBTC);
-  document.getElementById("signal").innerText = "BTC Signal: " + signal;
-  prevBTC = currentBTC;
-}
+<script>
+function login() {
+  const email = document.getElementById("email").value;
 
+  firebase.auth().signInAnonymously()
+    .then(() => alert("Logged in!"))
+    .catch(err => console.log(err));
+}
+</script>
 <!DOCTYPE html>
 <html>
 <head>
