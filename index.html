@@ -10,6 +10,29 @@ function login() {
     .catch(err => console.log(err));
 }
 </script>
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyANwVCPlAnCRqkOIyRLXP4fn-X2psonZ50",
+    authDomain: "worldtrade-f1f58.firebaseapp.com",
+    projectId: "worldtrade-f1f58",
+    storageBucket: "worldtrade-f1f58.firebasestorage.app",
+    messagingSenderId: "11998255908",
+    appId: "1:11998255908:web:844cf4cc02a12c85a0f1b1",
+    measurementId: "G-DDLJ5014KN"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 <!DOCTYPE html>
 <html>
 <head>
