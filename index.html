@@ -1,7 +1,20 @@
-<div id="login">
-  <input type="text" id="username" placeholder="Enter username">
-  <button onclick="login()">Login</button>
-</div>
+function getSignal(price, previousPrice) {
+  if (price > previousPrice) {
+    return "📈 BUY";
+  } else if (price < previousPrice) {
+    return "📉 SELL";
+  } else {
+    return "⏸ HOLD";
+  }
+}
+<h2 id="signal"></h2> 
+let prevBTC = 70000;
+
+function updateSignal(currentBTC) {
+  const signal = getSignal(currentBTC, prevBTC);
+  document.getElementById("signal").innerText = "BTC Signal: " + signal;
+  prevBTC = currentBTC;
+}
 
 <!DOCTYPE html>
 <html>
