@@ -1,482 +1,266 @@
-<div class="auth-box">
-  <h2>🚀 WorldTrade AI</h2>
-
-  <input type="email" id="email" placeholder="Email Address">
-  <input type="password" id="password" placeholder="Password">
-
-  <button onclick="register()">Sign Up</button>
-  <button onclick="login()">Login</button>
-  <button onclick="logout()">Logout</button>
-
-  <p id="status"></p>
-</div>
-
-<script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
-
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyANwVCPlAnCRqkOIyRLXP4fn-X2psonZ50",
-    authDomain: "worldtrade-f1f58.firebaseapp.com",
-    projectId: "worldtrade-f1f58",
-    storageBucket: "worldtrade-f1f58.firebasestorage.app",
-    messagingSenderId: "11998255908",
-    appId: "1:11998255908:web:844cf4cc02a12c85a0f1b1",
-    measurementId: "G-DDLJ5014KN"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
 <!DOCTYPE html>
 <html>
 <head>
-  <title>WorldTrade AI</title>
-  <style>
-    body {
-      background: black;
-      color: white;
-      text-align: center;
-      font-family: Arial;
-      padding: 50px;
-    }
-    .price-box {
-      margin-top: 30px;
-      font-size: 24px;
-    }
-  </style>
+  <title>DivaS Trader</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
 </head>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyANwVCPlAnCRqkOIyRLXP4fn-X2psonZ50",
-  authDomain: "worldtrade-f1f58.firebaseapp.com"
-};
-
-firebase.initializeApp(firebaseConfig);
-</script>
 <body>
 
-  <h1>🚀 WorldTrade AI</h1>
-  <p>Live Crypto Prices</p>
+<h2>Login</h2>
+<input id="email">
+<input id="pass" type="password">
+<button onclick="login()">Login</button>
 
-  <div class="price-box">
-    BTC: <span id="btc">Loading...</span><br>
-    ETH: <span id="eth">Loading...</span>
-  </div>
+<h2>API Keys</h2>
+<input id="apiKey" placeholder="Binance API Key">
+<input id="apiSecret" placeholder="Secret">
+<button onclick="saveKeys()">Save Keys</button>
 
-  <script>
-    async function getPrices() {
-      const res = await fetch("https://api.binance.com/api/v3/ticker/price");
-      const data = await res.json();
+<h2>Trade</h2>
+<input id="symbol" value="BTCUSDT">
+<input id="qty" placeholder="0.001">
+<button onclick="buy()">BUY</button>
+<button onclick="sell()">SELL</button>
 
-      const btc = data.find(c => c.symbol === "BTCUSDT");
-      const eth = data.find(c => c.symbol === "ETHUSDT");
+<h2>Wallet</h2>
+<button onclick="connect()">Connect Wallet</button>
+<p id="wallet"></p>
 
-      document.getElementById("btc").innerText = "$" + Number(btc.price).toFixed(2);
-      document.getElementById("eth").innerText = "$" + Number(eth.price).toFixed(2);
-    }
+<h2>Portfolio</h2>
+<button onclick="portfolio()">Load</button>
+<pre id="port"></pre>
 
-    getPrices();
-    setInterval(getPrices, 5000);
-  </script>
-
-</body>
-</html>
-<!-- TradingView Widget -->
-<div class="tradingview-widget-container">
-  <div id="tradingview_chart"></div>
-</div>
-
-<script src="https://s3.tradingview.com/tv.js"></script>
 <script>
-new TradingView.widget({
-  "container_id": "tradingview_chart",
-  "width": "100%",
-  "height": 400,
-  "symbol": "BINANCE:BTCUSDT",
-  "interval": "15",
-  "theme": "dark",
-  "style": "1",
-  "locale": "en",
-  "toolbar_bg": "#f1f3f6",
-  "enable_publishing": false,
-  "hide_side_toolbar": false,
-  "allow_symbol_change": true
+const API="http://localhost:3000";
+let token="";
+
+// LOGIN
+async function login(){
+  const res = await fetch(API+"/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({email:email.value,password:pass.value})
+  });
+  const data = await res.json();
+  token=data.token;
+}
+app.get("/portfolio", auth, async (req,res)=>{
+  const trades = await Trade.find({userId:req.user.id});
+
+  let summary = {};
+
+  trades.forEach(t=>{
+    if(!summary[t.symbol]) summary[t.symbol]=0;
+
+    summary[t.symbol] += t.side==="BUY"
+      ? t.quantity
+      : -t.quantity;
+  });
+
+  res.json(summary);
 });
+// SAVE KEYS
+async function saveKeys(){
+  await fetch(API+"/keys",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":token
+    },
+    body:JSON.stringify({
+      apiKey:apiKey.value,
+      apiSecret:apiSecret.value
+    })
+  });
+}
+// ===== IMPORTS =====
+const express = require("express");
+const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const axios = require("axios");
+const crypto = require("crypto");
+const cors = require("cors");
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+// ===== CONFIG =====
+const JWT_SECRET = "supersecret";
+const MONGO_URI = "YOUR_MONGODB_URI";
+
+// ===== CONNECT DB =====
+mongoose.connect(MONGO_URI)
+  .then(()=>console.log("DB connected"))
+  .catch(err=>console.log(err));
+
+// ===== MODELS =====
+const User = mongoose.model("User", new mongoose.Schema({
+  email:String,
+  password:String,
+  apiKey:String,
+  apiSecret:String,
+  plan:{type:String,default:"free"},
+  copyFrom:String,
+  botEnabled:Boolean
+}));
+
+const Trade = mongoose.model("Trade", new mongoose.Schema({
+  userId:String,
+  symbol:String,
+  side:String,
+  quantity:Number,
+  price:Number,
+  time:{type:Date,default:Date.now}
+}));
+
+// ===== AUTH =====
+function auth(req,res,next){
+  const token = req.headers.authorization;
+  if(!token) return res.sendStatus(401);
+  try{
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  }catch{
+    res.sendStatus(401);
+  }
+}
+
+// ===== REGISTER =====
+app.post("/register", async (req,res)=>{
+  const hash = await bcrypt.hash(req.body.password,10);
+  await User.create({email:req.body.email,password:hash});
+  res.send("Registered");
+});
+
+// ===== LOGIN =====
+app.post("/login", async (req,res)=>{
+  const user = await User.findOne({email:req.body.email});
+  if(!user) return res.send("No user");
+
+  const ok = await bcrypt.compare(req.body.password,user.password);
+  if(!ok) return res.send("Wrong pass");
+
+  const token = jwt.sign({id:user._id},JWT_SECRET);
+  res.json({token});
+});
+
+// ===== SAVE API KEYS =====
+app.post("/keys", auth, async (req,res)=>{
+  await User.findByIdAndUpdate(req.user.id,{
+    apiKey:req.body.apiKey,
+    apiSecret:req.body.apiSecret
+  });
+  res.send("Saved");
+});
+
+// ===== TRADE =====
+app.post("/trade", auth, async (req,res)=>{
+  const user = await User.findById(req.user.id);
+
+  const {symbol, side, quantity} = req.body;
+  const timestamp = Date.now();
+
+  const query = `symbol=${symbol}&side=${side}&type=MARKET&quantity=${quantity}&timestamp=${timestamp}`;
+  const signature = crypto.createHmac("sha256", user.apiSecret).update(query).digest("hex");
+
+  const result = await axios.post(
+    `https://api.binance.com/api/v3/order?${query}&signature=${signature}`,
+    {},
+    {headers:{'X-MBX-APIKEY':user.apiKey}}
+  );
+
+  const data = result.data;
+
+  await Trade.create({
+    userId:user._id,
+    symbol:data.symbol,
+    side:data.side,
+    quantity:data.executedQty,
+    price:data.fills[0].price
+  });
+
+  res.json(data);
+});
+
+// ===== PORTFOLIO =====
+app.get("/portfolio", auth, async (req,res)=>{
+  const trades = await Trade.find({userId:req.user.id});
+  let p = {};
+  trades.forEach(t=>{
+    if(!p[t.symbol]) p[t.symbol]=0;
+    p[t.symbol]+= t.side==="BUY"?t.quantity:-t.quantity;
+  });
+  res.json(p);
+});
+
+// ===== PNL =====
+app.get("/pnl", auth, async (req,res)=>{
+  const trades = await Trade.find({userId:req.user.id});
+  let pnl=0;
+  trades.forEach(t=>{
+    pnl += t.side==="SELL"? t.price*t.quantity : -t.price*t.quantity;
+  });
+  res.json({pnl});
+});
+
+// ===== BOT =====
+setInterval(async ()=>{
+  const users = await User.find({botEnabled:true});
+  for(const u of users){
+    const price = await axios.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
+    const p = parseFloat(price.data.price);
+
+    if(p<60000){
+      console.log("Bot BUY trigger");
+    }
+    if(p>65000){
+      console.log("Bot SELL trigger");
+    }
+  }
+},10000);
+req.user.id
+  t.quantity
+// ===== START =====
+app.listen(3000,()=>console.log("🚀 Server running"));
+// TRADE
+async function buy(){
+  await trade("BUY");
+}
+async function sell(){
+  await trade("SELL");
+}
+async function trade(side){
+  const res = await fetch(API+"/trade",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":token
+    },
+    body:JSON.stringify({
+      symbol:symbol.value,
+      side,
+      quantity:qty.value
+    })
+  });
+  console.log(await res.json());
+}
+
+// PORTFOLIO
+async function portfolio(){
+  const res = await fetch(API+"/portfolio",{headers:{Authorization:token}});
+  port.innerText = JSON.stringify(await res.json(),null,2);
+}
+
+// WALLET
+async function connect(){
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  await provider.send("eth_requestAccounts",[]);
+  const signer = provider.getSigner();
+  wallet.innerText = await signer.getAddress();
+}
 </script>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WorldTrade AI - Login</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .login-container {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      padding: 40px;
-      max-width: 400px;
-      width: 90%;
-    }
-    
-    .login-container h1 {
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 28px;
-    }
-    
-    .login-container p {
-      color: #666;
-      margin-bottom: 30px;
-      font-size: 14px;
-    }
-    
-    .form-group {
-      margin-bottom: 20px;
-    }
-    
-    label {
-      display: block;
-      color: #333;
-      font-weight: 600;
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
-    
-    input[type="email"],
-    input[type="password"] {
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #e0e0e0;
-      border-radius: 5px;
-      font-size: 14px;
-      transition: border-color 0.3s;
-    }
-    
-    input[type="email"]:focus,
-    input[type="password"]:focus {
-      outline: none;
-      border-color: #667eea;
-    }
-    
-    input[type="email"].error,
-    input[type="password"].error {
-      border-color: #ff6b6b;
-    }
-    
-    .error-message {
-      color: #ff6b6b;
-      font-size: 12px;
-      margin-top: 5px;
-      display: none;
-    }
-    
-    .error-message.show {
-      display: block;
-    }
-    
-    button {
-      width: 100%;
-      padding: 12px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-    }
-    
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    
-    .success-message {
-      color: #51cf66;
-      font-size: 14px;
-      margin-top: 15px;
-      text-align: center;
-      display: none;
-    }
-    
-    .success-message.show {
-      display: block;
-    }
-    
-    .crypto-prices {
-      margin-top: 30px;
-      padding-top: 30px;
-      border-top: 2px solid #e0e0e0;
-      display: none;
-    }
-    
-    .crypto-prices h2 {
-      color: #333;
-      font-size: 18px;
-      margin-bottom: 15px;
-    }
-    
-    .price-item {
-      color: #666;
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
-    
-    .price-item.loading::after {
-      content: " Loading...";
-      animation: pulse 1.5s infinite;
-    }
-    
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-  </style>
-</head>
-<body>
-  <div class="login-container">
-    <h1>🚀 WorldTrade AI</h1>
-    <p>Live Crypto Prices</p>
-    
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <input 
-          type="email" 
-          id="email" 
-          name="email" 
-          placeholder="Enter your email"
-          required
-        >
-        <div class="error-message" id="emailError"></div>
-      </div>
-      
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input 
-          type="password" 
-          id="password" 
-          name="password" 
-          placeholder="Enter your password"
-          required
-        >
-        <div class="error-message" id="passwordError"></div>
-      </div>
-      
-      <button type="submit" id="loginBtn">Login</button>
-      <div class="success-message" id="successMessage">Login successful! Redirecting...</div>
-    </form>
-    
-    <div class="crypto-prices" id="cryptoPrices">
-      <h2>Live Crypto Prices</h2>
-      <div class="price-item" id="btcPrice">BTC: Loading...</div>
-      <div class="price-item" id="ethPrice">ETH: Loading...</div>
-    </div>
-  </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-
-  <script>
-    // ==================== EMAIL VALIDATION ====================
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    function validateEmail(email) {
-      return emailRegex.test(email);
-    }
-
-    // ==================== FIREBASE SETUP ====================
-    const firebaseConfig = {
-      apiKey: "BGlVk3D0H1S_sH9WqWLzUjLqSuqME8ewOMRTJMHT1m2_EZChkQVxvFn5NTJ9X5hebA5ShuP3k81dzW4fNE28VCk",
-      authDomain: "worldtrade-ai.firebaseapp.com",
-      projectId: "worldtrade-f1f58",
-      storageBucket: "worldtrade-ai.appspot.com",
-      messagingSenderId: "1:11998255908:android:9cd8087c384860ada0f1b1",
-      appId: "11998255908"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-
-    // ==================== DOM ELEMENTS ====================
-    const loginForm = document.getElementById('loginForm');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const loginBtn = document.getElementById('loginBtn');
-    const emailError = document.getElementById('emailError');
-    const passwordError = document.getElementById('passwordError');
-    const successMessage = document.getElementById('successMessage');
-    const cryptoPrices = document.getElementById('cryptoPrices');
-    const btcPrice = document.getElementById('btcPrice');
-    const ethPrice = document.getElementById('ethPrice');
-
-    // ==================== EMAIL VALIDATION LISTENER ====================
-    emailInput.addEventListener('blur', function() {
-      const email = this.value.trim();
-      
-      if (email === '') {
-        emailError.textContent = '';
-        emailError.classList.remove('show');
-        this.classList.remove('error');
-        return;
-      }
-      
-      if (!validateEmail(email)) {
-        emailError.textContent = 'Please enter a valid email address';
-        emailError.classList.add('show');
-        this.classList.add('error');
-      } else {
-        emailError.textContent = '';
-        emailError.classList.remove('show');
-        this.classList.remove('error');
-      }
-    });
-
-    // ==================== FORM SUBMISSION ====================
-    loginForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      
-      // Reset error messages
-      emailError.textContent = '';
-      emailError.classList.remove('show');
-      passwordError.textContent = '';
-      passwordError.classList.remove('show');
-      emailInput.classList.remove('error');
-      passwordInput.classList.remove('error');
-      
-      // Validate email
-      if (!validateEmail(email)) {
-        emailError.textContent = 'Please enter a valid email address';
-        emailError.classList.add('show');
-        emailInput.classList.add('error');
-        return;
-      }
-      
-      // Validate password
-      if (password.length < 6) {
-        passwordError.textContent = 'Password must be at least 6 characters';
-        passwordError.classList.add('show');
-        passwordInput.classList.add('error');
-        return;
-      }
-      
-      // Disable button during submission
-      loginBtn.disabled = true;
-      loginBtn.textContent = 'Logging in...';
-      
-      try {
-        // Attempt Firebase authentication
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-        
-        // Show success message
-        successMessage.classList.add('show');
-        successMessage.textContent = `Welcome, ${user.email}! Loading your dashboard...`;
-        
-        // Show crypto prices
-        cryptoPrices.style.display = 'block';
-        fetchCryptoPrices();
-        
-        // Redirect after 2 seconds
-        setTimeout(() => {
-          window.location.href = '/dashboard.html'; // Update with your dashboard URL
-        }, 2000);
-        
-      } catch (error) {
-        loginBtn.disabled = false;
-        loginBtn.textContent = 'Login';
-        
-        // Handle specific Firebase errors
-        switch(error.code) {
-          case 'auth/user-not-found':
-            emailError.textContent = 'No account found with this email';
-            emailError.classList.add('show');
-            emailInput.classList.add('error');
-            break;
-          case 'auth/wrong-password':
-            passwordError.textContent = 'Incorrect password';
-            passwordError.classList.add('show');
-            passwordInput.classList.add('error');
-            break;
-          case 'auth/invalid-email':
-            emailError.textContent = 'Invalid email format';
-            emailError.classList.add('show');
-            emailInput.classList.add('error');
-            break;
-          case 'auth/too-many-requests':
-            emailError.textContent = 'Too many login attempts. Please try again later.';
-            emailError.classList.add('show');
-            break;
-          default:
-            emailError.textContent = error.message;
-            emailError.classList.add('show');
-        }
-      }
-    });
-
-    // ==================== CRYPTO PRICE FETCHING ====================
-    async function fetchCryptoPrices() {
-      try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd');
-        const data = await response.json();
-        
-        const btcValue = data.bitcoin.usd.toLocaleString();
-        const ethValue = data.ethereum.usd.toLocaleString();
-        
-        btcPrice.textContent = `BTC: $${btcValue}`;
-        ethPrice.textContent = `ETH: $${ethValue}`;
-        
-      } catch (error) {
-        console.error('Error fetching crypto prices:', error);
-        btcPrice.textContent = 'BTC: Error loading';
-        ethPrice.textContent = 'ETH: Error loading';
-      }
-    }
-
-    // ==================== AUTHENTICATION STATE LISTENER ====================
-    auth.onAuthStateChanged(function(user) {
-      if (user) {
-        console.log('User logged in:', user.email);
-      } else {
-        console.log('User logged out');
-      }
-    });
-  </script>
 </body>
 </html>
