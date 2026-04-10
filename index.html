@@ -1,266 +1,128 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>DivaS Trader</title>
-  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
-</head>
-<body>
-
-<h2>Login</h2>
-<input id="email">
-<input id="pass" type="password">
-<button onclick="login()">Login</button>
-
-<h2>API Keys</h2>
-<input id="apiKey" placeholder="Binance API Key">
-<input id="apiSecret" placeholder="Secret">
-<button onclick="saveKeys()">Save Keys</button>
-
-<h2>Trade</h2>
-<input id="symbol" value="BTCUSDT">
-<input id="qty" placeholder="0.001">
-<button onclick="buy()">BUY</button>
-<button onclick="sell()">SELL</button>
-
-<h2>Wallet</h2>
-<button onclick="connect()">Connect Wallet</button>
-<p id="wallet"></p>
-
-<h2>Portfolio</h2>
-<button onclick="portfolio()">Load</button>
-<pre id="port"></pre>
-
 <script>
-const API="http://localhost:3000";
-let token="";
-
-// LOGIN
-async function login(){
-  const res = await fetch(API+"/login",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({email:email.value,password:pass.value})
-  });
-  const data = await res.json();
-  token=data.token;
+/* ===== AUTH ===== */
+function register(){
+  let users = JSON.parse(localStorage.getItem("users"))||[];
+  if(users.find(u=>u.email==regEmail.value)) return alert("User exists");
+  users.push({email:regEmail.value, pass:regPass.value});
+  localStorage.setItem("users", JSON.stringify(users));
+  alert("Registered!");
 }
-app.get("/portfolio", auth, async (req,res)=>{
-  const trades = await Trade.find({userId:req.user.id});
-
-  let summary = {};
-
-  trades.forEach(t=>{
-    if(!summary[t.symbol]) summary[t.symbol]=0;
-
-    summary[t.symbol] += t.side==="BUY"
-      ? t.quantity
-      : -t.quantity;
-  });
-
-  res.json(summary);
-});
-// SAVE KEYS
-async function saveKeys(){
-  await fetch(API+"/keys",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization":token
-    },
-    body:JSON.stringify({
-      apiKey:apiKey.value,
-      apiSecret:apiSecret.value
-    })
-  });
+function login(){
+  let users = JSON.parse(localStorage.getItem("users"))||[];
+  let u = users.find(x=>x.email==logEmail.value && x.pass==logPass.value);
+  if(!u) return alert("Invalid login");
+  localStorage.setItem("session", u.email);
+  load();
 }
-// ===== IMPORTS =====
-const express = require("express");
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const axios = require("axios");
-const crypto = require("crypto");
-const cors = require("cors");
-
-const app = express();
-app.use(express.json());
-app.use(cors());
-
-// ===== CONFIG =====
-const JWT_SECRET = "supersecret";
-const MONGO_URI = "YOUR_MONGODB_URI";
-
-// ===== CONNECT DB =====
-mongoose.connect(MONGO_URI)
-  .then(()=>console.log("DB connected"))
-  .catch(err=>console.log(err));
-
-// ===== MODELS =====
-const User = mongoose.model("User", new mongoose.Schema({
-  email:String,
-  password:String,
-  apiKey:String,
-  apiSecret:String,
-  plan:{type:String,default:"free"},
-  copyFrom:String,
-  botEnabled:Boolean
-}));
-
-const Trade = mongoose.model("Trade", new mongoose.Schema({
-  userId:String,
-  symbol:String,
-  side:String,
-  quantity:Number,
-  price:Number,
-  time:{type:Date,default:Date.now}
-}));
-
-// ===== AUTH =====
-function auth(req,res,next){
-  const token = req.headers.authorization;
-  if(!token) return res.sendStatus(401);
-  try{
-    req.user = jwt.verify(token, JWT_SECRET);
-    next();
-  }catch{
-    res.sendStatus(401);
+function logout(){ localStorage.removeItem("session"); location.reload(); }
+function load(){
+  let u = localStorage.getItem("session");
+  if(u){
+    auth.style.display="none";
+    dashboard.style.display="block";
+    welcome.innerText="👋 Welcome "+u;
   }
 }
+load();
 
-// ===== REGISTER =====
-app.post("/register", async (req,res)=>{
-  const hash = await bcrypt.hash(req.body.password,10);
-  await User.create({email:req.body.email,password:hash});
-  res.send("Registered");
-});
-
-// ===== LOGIN =====
-app.post("/login", async (req,res)=>{
-  const user = await User.findOne({email:req.body.email});
-  if(!user) return res.send("No user");
-
-  const ok = await bcrypt.compare(req.body.password,user.password);
-  if(!ok) return res.send("Wrong pass");
-
-  const token = jwt.sign({id:user._id},JWT_SECRET);
-  res.json({token});
-});
-
-// ===== SAVE API KEYS =====
-app.post("/keys", auth, async (req,res)=>{
-  await User.findByIdAndUpdate(req.user.id,{
-    apiKey:req.body.apiKey,
-    apiSecret:req.body.apiSecret
-  });
-  res.send("Saved");
-});
-
-// ===== TRADE =====
-app.post("/trade", auth, async (req,res)=>{
-  const user = await User.findById(req.user.id);
-
-  const {symbol, side, quantity} = req.body;
-  const timestamp = Date.now();
-
-  const query = `symbol=${symbol}&side=${side}&type=MARKET&quantity=${quantity}&timestamp=${timestamp}`;
-  const signature = crypto.createHmac("sha256", user.apiSecret).update(query).digest("hex");
-
-  const result = await axios.post(
-    `https://api.binance.com/api/v3/order?${query}&signature=${signature}`,
-    {},
-    {headers:{'X-MBX-APIKEY':user.apiKey}}
-  );
-
-  const data = result.data;
-
-  await Trade.create({
-    userId:user._id,
-    symbol:data.symbol,
-    side:data.side,
-    quantity:data.executedQty,
-    price:data.fills[0].price
-  });
-
-  res.json(data);
-});
-
-// ===== PORTFOLIO =====
-app.get("/portfolio", auth, async (req,res)=>{
-  const trades = await Trade.find({userId:req.user.id});
-  let p = {};
-  trades.forEach(t=>{
-    if(!p[t.symbol]) p[t.symbol]=0;
-    p[t.symbol]+= t.side==="BUY"?t.quantity:-t.quantity;
-  });
-  res.json(p);
-});
-
-// ===== PNL =====
-app.get("/pnl", auth, async (req,res)=>{
-  const trades = await Trade.find({userId:req.user.id});
-  let pnl=0;
-  trades.forEach(t=>{
-    pnl += t.side==="SELL"? t.price*t.quantity : -t.price*t.quantity;
-  });
-  res.json({pnl});
-});
-
-// ===== BOT =====
-setInterval(async ()=>{
-  const users = await User.find({botEnabled:true});
-  for(const u of users){
-    const price = await axios.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
-    const p = parseFloat(price.data.price);
-
-    if(p<60000){
-      console.log("Bot BUY trigger");
-    }
-    if(p>65000){
-      console.log("Bot SELL trigger");
-    }
-  }
-},10000);
-req.user.id
-  t.quantity
-// ===== START =====
-app.listen(3000,()=>console.log("🚀 Server running"));
-// TRADE
-async function buy(){
-  await trade("BUY");
-}
-async function sell(){
-  await trade("SELL");
-}
-async function trade(side){
-  const res = await fetch(API+"/trade",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization":token
-    },
-    body:JSON.stringify({
-      symbol:symbol.value,
-      side,
-      quantity:qty.value
-    })
-  });
-  console.log(await res.json());
-}
-
-// PORTFOLIO
-async function portfolio(){
-  const res = await fetch(API+"/portfolio",{headers:{Authorization:token}});
-  port.innerText = JSON.stringify(await res.json(),null,2);
-}
-
-// WALLET
-async function connect(){
+/* ===== WALLET ===== */
+async function connectWallet(){
+  if(!window.ethereum) return alert("Install MetaMask");
   const provider = new ethers.providers.Web3Provider(window.ethereum);
-  await provider.send("eth_requestAccounts",[]);
+  await provider.send("eth_requestAccounts", []);
   const signer = provider.getSigner();
-  wallet.innerText = await signer.getAddress();
+  wallet.innerText = "🟢 " + await signer.getAddress();
 }
-</script>
 
-</body>
-</html>
+/* ===== PRICE ===== */
+let lastPrice = null;
+
+async function getPrice(){
+  const symbol = pair.value;
+  const res = await fetch(`https://api.binance.com/api/v3/ticker/price?symbol=${symbol}`);
+  const data = await res.json();
+  const p = parseFloat(data.price);
+
+  price.innerText = p.toFixed(2);
+
+  // price color change
+  if(lastPrice){
+    price.style.color = p > lastPrice ? "#22c55e" : "#ef4444";
+  }
+  lastPrice = p;
+
+  return p;
+}
+
+/* ===== CHART ===== */
+let prices = [];
+let labels = [];
+
+const chart = new Chart(document.getElementById("chart"), {
+  type:"line",
+  data:{
+    labels: labels,
+    datasets:[{
+      label:"Live Price",
+      data: prices,
+      borderWidth:2,
+      tension:0.3
+    }]
+  },
+  options:{
+    plugins:{ legend:{display:false} },
+    scales:{ x:{display:false} }
+  }
+});
+
+async function updateChart(){
+  const p = await getPrice();
+  const time = new Date().toLocaleTimeString();
+
+  prices.push(p);
+  labels.push(time);
+
+  if(prices.length > 30){
+    prices.shift();
+    labels.shift();
+  }
+
+  chart.update();
+}
+setInterval(updateChart, 2000);
+
+/* ===== TRADE ===== */
+let history = [];
+
+function buy(){
+  const amt = amount.value;
+  if(!amt) return alert("Enter amount");
+
+  const log = `🟢 BUY ${amt} ${pair.value}`;
+  history.push(log);
+  tradeLog.innerText = history.slice(-3).join("\n");
+}
+
+function sell(){
+  const amt = amount.value;
+  if(!amt) return alert("Enter amount");
+
+  const log = `🔴 SELL ${amt} ${pair.value}`;
+  history.push(log);
+  tradeLog.innerText = history.slice(-3).join("\n");
+}
+
+/* ===== AI SIGNAL ===== */
+function aiSignal(){
+  const signals = [
+    {text:"BUY 🚀", color:"#22c55e"},
+    {text:"SELL 🔻", color:"#ef4444"},
+    {text:"HOLD ⏸", color:"#eab308"}
+  ];
+
+  const pick = signals[Math.floor(Math.random()*signals.length)];
+  signal.innerText = pick.text;
+  signal.style.color = pick.color;
+}
+setInterval(aiSignal, 4000);
+</script>
