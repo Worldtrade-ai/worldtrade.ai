@@ -94,7 +94,7 @@
 
 </body>
 </html>
-<script>
+<script src="/app/chart.js">
 /* ===== AUTH ===== */
 function register(){
   let users = JSON.parse(localStorage.getItem("users"))||[];
@@ -221,8 +221,8 @@ function aiSignal(){
   signal.style.color = pick.color;
 }
 setInterval(aiSignal, 4000);
-</html>
-    <backed>
+</script>
+<script src="/app/chart.js">
     const supabase = window.supabase.createClient(
   "YOUR_SUPABASE_URL",
   "YOUR_SUPABASE_ANON_KEY"
@@ -259,6 +259,6 @@ async function checkUser() {
 
   if (!data.user) {
     window.location.href = "/login.html";
+   </script>
   }
 }
-</backed>
