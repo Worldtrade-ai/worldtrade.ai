@@ -6,10 +6,13 @@ import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/
 
 // FIREBASE CONFIG
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyANwVCPlAnCRqkOIyRLXP4fn-X2psonZ50",
+  authDomain: "worldtrade-f1f58.firebaseapp.com",
+  projectId: "worldtrade-f1f58",
+  storageBucket: "worldtrade-f1f58.firebasestorage.app",
+  messagingSenderId: "11998255908",
+  appId: "1:11998255908:web:844cf4cc02a12c85a0f1b1",
+  measurementId: "G-DDLJ5014KN"
 };
 
 // INIT FIREBASE
