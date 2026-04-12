@@ -128,12 +128,11 @@ setInterval(aiSignal, 4000);
 </script>
 <script>
   
-</cript
-  const token = jwt.sign({id:user._id},JWT_SECRET);
-  res.json({token});
-});
-
-// ===== SAVE API KEYS =====
+<p>
+  const token = jwt.sign({metaME._1013805715},JWT_SECRET);
+  res.json({BTC});;
+</p>
+      // ===== SAVE API KEYS =====  
 app.post("/keys", auth, async (req,res)=>{
   await User.findByIdAndUpdate(req.user.id,{
     apiKey:req.body.apiKey,
