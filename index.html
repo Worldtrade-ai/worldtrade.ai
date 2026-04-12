@@ -1,6 +1,176 @@
 <!DOCTYPE html>
 <html>
 <head>
+<title>WorldTrade AI</title>
+</head>
+
+<body style="background:black; color:white; text-align:center;">
+
+<h2>Login / Register</h2>
+
+<input id="email" placeholder="Email"><br><br>
+<input id="password" type="password" placeholder="Password"><br><br>
+
+<button onclick="signUp()">Sign Up</button// Import Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// YOUR FIREBASE CONFIG (replace with your own)
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// SIGN UP
+window.signUp = function () {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  createUserWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      alert("Account created!");
+      console.log(userCredential.user);
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+};
+
+// LOGIN
+window.login = function () {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      alert("Login successful!");
+      console.log(userCredential.user);
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+};>
+<button onclick="login()">Login</button>// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Helper function to get input values
+function getInputs() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!email || !password) {
+    alert("Please enter email and password.");
+    return null;
+  }
+
+  if (password.length < 6) {
+    alert("Password must be at least 6 characters.");
+    return null;
+  }
+
+  return { email, password };
+}
+
+// SIGN UP FUNCTION
+window.signUp = async function () {
+  const data = getInputs();
+  if (!data) return;
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      data.email,
+      data.password
+    );
+
+    alert("Account created successfully!");
+    console.log("User:", userCredential.user);
+
+  } catch (error) {
+    console.error(error);
+
+    if (error.code === "auth/email-already-in-use") {
+      alert("Email already registered.");
+    } else {
+      alert("Signup error: " + error.message);
+    }
+  }
+};
+
+// LOGIN FUNCTION
+window.login = async function () {
+  const data = getInputs();
+  if (!data) return;
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      data.email,
+      data.password
+    );
+
+    alert("Login successful!");
+    console.log("User:", userCredential.user);
+
+    // redirect to dashboard
+    window.location.href = "dashboard.html";
+
+  } catch (error) {
+    console.error(error);
+
+    if (error.code === "auth/invalid-credential") {
+      alert("Invalid email or password.");
+    } else {
+      alert("Login error: " + error.message);
+    }
+  }
+};
+
+// Auto-detect login
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("User already logged in:", user.email);
+  } else {
+    console.log("No user logged in.");
+  }
+});
+
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html>
+<head>
   <title>WorldTrade AI</title>
   <style>
     body {
