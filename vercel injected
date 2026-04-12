@@ -1,1 +1,96 @@
-npm i @vercel/speed-insights
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";    
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyANwVCPlAnCRqkOIyRLXP4fn-X2psonZ5",
+  authDomain: "worldtrade-f1f58.firebaseapp.com",
+  projectId: "worldtrade-f1f58.firebaseapp.com",
+  appId: "1:11998255908:web:844cf4cc02a12c85a0f1b1"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Helper function to get input values
+function getInputs() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if (!email || !password) {
+    alert("Please enter email and password.");
+    return null;
+  }
+
+  if (password.length < 6) {
+    alert("Password must be at least 6 characters.");
+    return null;
+  }
+
+  return { email, password };
+}
+
+// SIGN UP FUNCTION
+window.signUp = async function () {
+  const data = getInputs();
+  if (!data) return;
+
+  try {
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      data.email,
+      data.password
+    );
+
+    alert("Account created successfully!");
+    console.log("User:", userCredential.user);
+
+  } catch (error) {
+    console.error(error);
+
+    if (error.code === "auth/email-already-in-use") {
+      alert("Email already registered.");
+    } else {
+      alert("Signup error: " + error.message);
+    }
+  }
+};
+
+// LOGIN FUNCTION
+window.login = async function () {
+  const data = getInputs();
+  if (!data) return;
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      data.email,
+      data.password
+    );
+
+    alert("Login successful!");
+    console.log("User:", userCredential.user);
+
+    // redirect to dashboard
+    window.location.href = "dashboard.html";
+
+  } catch (error) {
+    console.error(error);
+
+    if (error.code === "auth/invalid-credential") {
+      alert("Invalid email or password.");
+    } else {
+      alert("Login error: " + error.message);
+    }
+  }
+};
+
+// Auto-detect login
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("User already logged in:", user.email);
+  } else {
+    console.log("No user logged in.");
+  }
+});
