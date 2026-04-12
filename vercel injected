@@ -94,3 +94,4 @@ onAuthStateChanged(auth, (user) => {
     console.log("No user logged in.");
   }
 });
+<script type="module" src="index.dashboard.js"></script>
