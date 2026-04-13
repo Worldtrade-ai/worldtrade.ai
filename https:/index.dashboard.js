@@ -1,64 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Login</title>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-</head>
-
-<body style="background:black; color:white; text-align:center;">
-
-<h1>🚀 Login / Register</h1>
-
-<input id="email" placeholder="Email"><br><br>
-<input id="password" type="password" placeholder="Password"><br><br>
-
-<button onclick="signup()">Sign Up</button>
-<button onclick="login()">Login</button>
-
-<script>
-// ✅ YOUR FIREBASE CONFIG
-const firebaseConfig = {
-  apiKey: "AIzaSyANwVCPlAnCRqkOIyRLXP4fn-X2psonZ50",
-  authDomain: "worldtrade-f1f58.firebaseapp.com",
-};
-
-// ✅ INIT
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-
-// ✅ SIGN UP
-function signup() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  auth.createUserWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      alert("Account created!");
-      window.location.href = "dashboard.html";
-    })
-    .catch((error) => {
-      alert(error.message);
-    });
-}
-
-// ✅ LOGIN
-function login() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  auth.signInWithEmailAndPassword(email, password)
-    .then((userCredential) => {
-      alert("Login success!");
-      window.location.href = "dashboard.html";
-    })
-    .catch((error) => {
-      alert(error.message);
-    });
-}
-</script>
-
-</body>
-</html>
+// Check if user is logged in
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    document.getElementById("userEmail").innerText = user.email;
+  } else {
+    // Not logged in → go back to login page
+    window.location.href = "login.html";
+  }
+});
