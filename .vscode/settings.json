@@ -1,3 +1,19 @@
 {
+  "app": {
+    "name": "WorldTrade AI",
+    "theme": "dark"
+  },
+  "user": {
+    "defaultName": "Trader",
+    "balance": 1500
+  },
+  "features": {
+    "tradingEnabled": true,
+    "showChart": true,
+    "showWallet": true
+  }
+}
+
+{
     "githubPullRequests.pullRequestDescription": "branchName"
 }
