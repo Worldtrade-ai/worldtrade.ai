@@ -22,7 +22,29 @@
   <button onclick="login()">Login</button>
 
   <script type="module" src="app.js"></script>
+<script>
+  // 🚀 Go to login page
+  function goLogin() {
+    window.location.href = "login.html";
+  }
 
+  // 🚀 Check if user already logged in (Firebase)
+  function checkUser() {
+    if (typeof firebase !== "undefined") {
+      const auth = firebase.auth();
+
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          // Already logged in → go dashboard
+          window.location.href = "dashboard.html";
+        }
+      });
+    }
+  }
+
+  // Run on load
+  checkUser();
+</script>
 </body>
 
 </html>
