@@ -112,3 +112,40 @@ function register() {
       alert(error.message);
     });
 }
+fetch('settings.json')
+  .then(res => res.json())
+  .then(settings => {
+
+    // 🏷 App Name
+    document.getElementById("appName").innerText = settings.app.name;
+
+    // 👤 Username
+    document.getElementById("username").innerText = settings.user.defaultName;
+
+    // 💰 Balance
+    document.getElementById("balance").innerText = settings.user.balance;
+
+    // 🎨 Theme
+    if (settings.app.theme === "dark") {
+      document.body.style.background = "#0D0D0D";
+      document.body.style.color = "white";
+    }
+
+    // 📊 Show / Hide Chart
+    if (!settings.features.showChart) {
+      document.getElementById("chart").style.display = "none";
+    }
+
+    // 💰 Show / Hide Wallet
+    if (!settings.features.showWallet) {
+      document.getElementById("wallet").style.display = "none";
+    }
+
+    // 🚫 Disable Trading
+    if (!settings.features.tradingEnabled) {
+      document.getElementById("tradeBtn").innerText = "Trading Disabled";
+      document.getElementById("tradeBtn").disabled = true;
+    }
+
+  })
+  .catch(err => console.error("Settings load error:", err));
