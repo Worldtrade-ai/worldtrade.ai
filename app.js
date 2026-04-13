@@ -94,3 +94,21 @@ onAuthStateChanged(auth, (user) => {
     console.log("No user logged in.");
   }
 });
+function register() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  if (email === "" || password === "") {
+    alert("Please fill all fields");
+    return;
+  }
+
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(() => {
+      alert("Signup success!");
+      window.location.href = "dashboard.html";
+    })
+    .catch((error) => {
+      alert(error.message);
+    });
+}
